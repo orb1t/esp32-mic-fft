@@ -144,19 +144,28 @@ void setupMic() {
       .mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_RX), // Receive, not transfer
       .sample_rate = samplingFrequency,                        
       .bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT, // could only get it to work with 32bits
-      .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT, // although the SEL config should be left, it seems to transmit on right
+      .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT, // although the SEL config should be left, it seems to transmit on right
       .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
       .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,     // Interrupt level 1
       .dma_buf_count = 4,                           // number of buffers
       .dma_buf_len = BLOCK_SIZE                     // samples per buffer
   };
 
+  // INMP441 GND to ESP32 GND
+  // INMP441 VDD to ESP32 3.3V
+  // INMP441 SD to ESP32 A4/32
+  // INMP441 SCK to ESP32 A16/14
+  // INMP441 WS to ESP32 15
+  // INMP441 L/R to ESP32 GND
+  // via https://revspace.nl/EspAudioSensor and https://github.com/bertrik/NoiseLevel
+  // datasheet: https://www.invensense.com/wp-content/uploads/2015/02/INMP441.pdf
+
   // The pin config as per the setup
     i2s_pin_config_t pin_config = {
-        .bck_io_num = 26,  // IIS_SCLK
-        .ws_io_num = 32,   // IIS_LCLK
-        .data_out_num = -1,// IIS_DSIN
-        .data_in_num = 33  // IIS_DOUT
+        .bck_io_num = 14,       // BCKL
+        .ws_io_num = 15,        // LRCL
+        .data_out_num = -1,     // not used (only for speakers)
+        .data_in_num = 32       // DOUT
     };
 
   // Configuring the I2S driver and pins.
